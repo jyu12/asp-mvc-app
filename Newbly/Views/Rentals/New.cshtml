@@ -1,0 +1,138 @@
+﻿@model dynamic
+
+@{
+    ViewBag.Title = "New Rental Form";
+}
+
+<h2>New Rental Form</h2>
+@* Start with raw html form where action "" is the endpoint ie <form "/controller/action">
+    Also possible to create form with Ajax.BeginForm() that calls an action controller not API controllers
+*@
+
+<form id="newRental">
+    <div class="form-group">
+        <label>Customer</label>
+        <div class="tt-container">
+            @*'required' standard HTML5 validation attr detectable to jQueryVal
+              data-rule-validCustomer the custom validator that was added jQuery needs the name input attr*@
+            <input id="customer" name="customer" data-rule-validCustomer="true" required type="text" value="" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Movie</label>
+        <div class="tt-container">
+            <input id="movie" name="movie" data-rule-validMovies="true" required type="text" value="" class="form-control" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 col-sm-4">
+            <ul id="movies" class="list-group"></ul>
+        </div>
+    </div>
+
+    <button class="btn btn-primary">Submit</button>
+</form>
+
+@*Exmaple using Twitter's Typeahead.js*@
+@section scripts
+{
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $(document).ready(function () {
+            // view model on client.
+            var vm = {
+                movieIds: []
+            };
+
+            var customers = new Bloodhound({
+                datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'), // tokenizes customers by name
+                queryTokenizer: Bloodhound.tokenizers.whitespace,
+                // prefetch: ' Provide data upon initialization, less burden on server
+                remote: {
+                    url: '/api/customers?query=%QUERY', // places userinput in %QUERY during runtime
+                    wildcard: '%QUERY'
+                }
+            });
+            // Further Typeahead configuration
+            $('#customer').typeahead({
+                minLength: 3,
+                highlight: true
+            }, {
+                    name: 'customers',
+                    display: 'name',
+                    source: customers // the source in url
+                }).on("typeahead:select", function (e, customer) {  // events triggered by typeahead, see docs for more.
+                    vm.customerId = customer.id;
+                });
+
+            var movies = new Bloodhound({
+                datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
+                queryTokenizer: Bloodhound.tokenizers.whitespace,
+                remote: {
+                    url: '/api/movies?query=%QUERY',
+                    wildcard: '%QUERY'
+                }
+            });
+            $('#movie').typeahead({
+                minLength: 3,
+                highlight: true
+            }, {
+                    name: 'movies',
+                    display: 'name',
+                    source: movies
+                }).on("typeahead:select", function (e, movie) {
+                    // use jQuery to modify the DOM and update the list
+                    // normally, a front-end framework like angular/react would be used to bind model to the DOMs
+                    $("#movies").append("<li class='list-group-item'>" + movie.name + "</li>");
+                    // jQueryVal() now out of scope
+                    $("#movie").typeahead("val", "");
+                    //stores the id and send it to server later
+                    vm.movieIds.push(movie.id);
+                });
+
+            // Example of a custom validator
+            $.validator.addMethod("validCustomer", function () {
+                return vm.customerId && vm.customerId !== 0;
+            }, "Not a valid customers.");
+
+            $.validator.addMethod("validMovies", function () {
+                return vm.movieIds.length > 0;
+            }, "No movies selected.");
+
+            // Pass in the configurations
+            var validator = $("#newRental").validate({
+                // if valid, submitHandler submits the form
+                submitHandler: function () {
+                    // $.preventDefault(); from using the default html Form but inside scope of Typeahead
+                    // Using ajax instead
+                    $.ajax({
+                        url: "/api/rentals",
+                        method: "post",
+                        data: vm // Data(the rental dto) in the submit Form 
+                    })
+                    .done(function () {
+                        toastr.success("Rental recorded");
+                        console.log("done")
+
+                        // clear the form when done
+                        $("#customer").typeahead("val", "");
+                        $("#movie").typeahead("val", "");
+                        $("#movies").empty();
+
+                        vm = { movieIds: [] };
+
+                        validator.resetForm();
+                     })
+                    .fail(function () {
+                        toastr.error("Rental failed");
+                        console.log("failed")
+                        });
+                    // .ajax is called then return false, so it does not use standard html form.
+                    return false; 
+                }
+            });
+        });
+    </script>
+}

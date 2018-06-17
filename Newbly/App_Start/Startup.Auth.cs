@@ -6,6 +6,7 @@ using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.Google;
 using Owin;
 using Newbly.Models;
+using System.Configuration;
 
 namespace Newbly
 {
@@ -54,9 +55,16 @@ namespace Newbly
             //   consumerKey: "",
             //   consumerSecret: "");
 
-            //app.UseFacebookAuthentication(
-            //   appId: "",
-            //   appSecret: "");
+            /*
+             * Example using OAuth to login
+             * 
+             * Just remember to also update the other properties required by the app in ExternalLoginConfirmation view, model and actions
+             * and Store the config them in encrypted web.config
+             * 
+             * */
+            app.UseFacebookAuthentication(
+               appId: ConfigurationManager.AppSettings["FacebookAppId"],
+               appSecret: ConfigurationManager.AppSettings["FacebookSecretKey"]);
 
             //app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
             //{

@@ -3,13 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Newbly.Models
 {
-    public class ExternalLoginConfirmationViewModel
-    {
-        [Required]
-        [Display(Name = "Email")]
-        public string Email { get; set; }
-    }
-
+    // ASP.NET creates this in /Models/
     public class ExternalLoginListViewModel
     {
         public string ReturnUrl { get; set; }
@@ -64,6 +58,15 @@ namespace Newbly.Models
 
     public class RegisterViewModel
     {
+        [Required]
+        [Phone]
+        [Display(Name = "Phone Number")]
+        public string Phone { get; set; }
+
+        [Required]
+        [Display(Name = "Driving License")]
+        public string DrivingLicense { get; set; }
+
         [Required]
         [EmailAddress]
         [Display(Name = "Email")]

@@ -3,14 +3,28 @@ using System.Web.Optimization;
 
 namespace Newbly
 {
+    // client-side assets gets bundled deducing the number of HTTP Requests needed for page to load
     public class BundleConfig
     {
         // For more information on bundling, visit https://go.microsoft.com/fwlink/?LinkId=301862
         public static void RegisterBundles(BundleCollection bundles)
         {
-            bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
-                        "~/Scripts/jquery-{version}.js"));
+            // Example client-slide optimization
+            // Consolidate the scripts so less requests are needed.
+            bundles.Add(new ScriptBundle("~/bundles/lib").Include(
+                            "~/Scripts/jquery-{version}.js",
+                            "~/Scripts/bootstrap.js",
+                            "~/Scripts/bootbox.js",
+                            "~/Scripts/datatables/jquery.datatables.js",
+                            "~/Scripts/datatables/datatables.bootstrap.js",
+                            "~/Scripts/typeahead.bundle.js",
+                            "~/Scripts/toastr.js"
+                        ));
 
+            /* Client-Side Validation is not enabled by default
+             * Ex. in _Layout,cs Scripts.Render() does not include this
+             * Need to include it in the View
+             **/
             bundles.Add(new ScriptBundle("~/bundles/jqueryval").Include(
                         "~/Scripts/jquery.validate*"));
 
@@ -19,11 +33,11 @@ namespace Newbly
             bundles.Add(new ScriptBundle("~/bundles/modernizr").Include(
                         "~/Scripts/modernizr-*"));
 
-            bundles.Add(new ScriptBundle("~/bundles/bootstrap").Include(
-                      "~/Scripts/bootstrap.js"));
-
             bundles.Add(new StyleBundle("~/Content/css").Include(
-                      "~/Content/bootstrap.css",
+                      "~/Content/datatables/css/datatables.bootstrap.css",
+                      "~/Content/bootstrap-flatly.css",
+                      "~/Content/typeahead.css",
+                      "~/Content/toastr.css",
                       "~/Content/site.css"));
         }
     }

@@ -1,0 +1,111 @@
+﻿@model IEnumerable<Newbly.Models.Customer>
+
+<h2>Customers</h2>
+
+<div>
+    <p>
+        @Html.ActionLink("New Customer", "New", "Customers", null, new { @class = "btn btn-success" })
+    </p>
+</div>
+
+<table id="customers" class="table table-bordered table-hover">
+    <thead>
+        <tr class="table-light">
+            <th>Customer</th>
+            <th>Membership Type</th>
+            <td>Delete</td>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+@section scripts
+{
+<script>
+        $(document).ready(function () {
+            @*
+                $.DataTable() extracts DOM elements and create it's own table and maintain a list objs in memory
+                Which uses those objs to provide Search, Pagination and Sorting
+                The cost is that .DataTable() will need to parse the table from server
+                What if the table has 10k entries? and the JSONs are hundreds of lines?
+                The better approach would be to use an API, get raw JSONs
+                This is okay as long as the table data is light. If it's the other way around then..
+                Server-side process will need to be enabled and process
+                Sorting, Pagination and Searching will be on the server side.
+            *@
+
+            var table = $("#customers").DataTable({
+                ajax: {
+                    url: "/api/customers",
+                    dataSrc: ""
+                },
+                columns: [
+                    {
+                        // By default, dataTable() renders value as plain text
+                        data: "name",
+                        // Special render function for the data in each row
+                        render: function (data, type, customer) {
+                            return "<a href='/customers/edit/" + customer.id + "'>" + customer.name + "</a>";
+                        }
+                    },
+                    {
+                        // Example of returning hierarchical data
+                        data: "membershipType.name"
+                    },
+                    {
+                        data: "id",
+                        render: function (data) {
+                            return "<button class='btn-link js-delete' data-customer-id=" + data + ">Delete</button>"
+                        }
+                    }]
+            });
+
+            @* $("#customers .js-delete").on("click", function()
+                This is not efficent - To have click events for each row's delete button in memory. *@
+            @* Instead add a filter on the .on() So that there is one event for all delete buttons on the page
+              It works here because the handler is hooked to $("customers")
+              When the click event is raised matching .js-delete, the function will get called.*@
+            $("#customers").on("click", ".js-delete", function() {
+                var button = $(this);
+                // example using Bootbox to display dialog.
+                bootbox.confirm("Are you sure?", function (result) {
+                    // Accessing data here - this shouldn't be in the View, the JS code should be in a seperate file
+                    if (result) {
+                        $.ajax({
+                            url: "/api/customers/" + button.attr("data-customer-id"),
+                            method: "DELETE",
+                            success: function () {
+                                @* .parents("tr").remove() is only deleting from the DOM
+                                  Need to delete the internal list of datatable and redraw itself
+                                  see datatables.net for more API. *@
+                                table.row(button.parents("tr")).remove().draw();
+                            }
+                        });
+                    }
+                });
+            });
+        });
+</script>
+}
+
+@*
+    Example using jQuery to make an API call
+        <script>
+        $(document).ready(function() {
+            $("#customers .js-delete").on("click", function() {
+                var button = $(this); // JS Scoping - Save member var here for the ajax callback
+                if (confirm("For reals?")) {
+                    $.ajax({
+                        url: "/api/customers/" + button.attr("data-customer-id"),
+                        method: "DELETE",
+                        success: function () {  the call back when it was done
+                            // Out of scope here. Need a reference back.
+                            button.parents("tr").remove();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+*@
+

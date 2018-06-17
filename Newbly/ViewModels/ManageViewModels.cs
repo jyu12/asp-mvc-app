@@ -5,6 +5,7 @@ using Microsoft.Owin.Security;
 
 namespace Newbly.Models
 {
+    // ASP.NET creates ManageViewModels in /Models/
     public class IndexViewModel
     {
         public bool HasPassword { get; set; }

@@ -1,0 +1,22 @@
+﻿@model Newbly.Models.Customer
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{ 
+    var customer = Model;
+}
+
+<div class="customerDetails">
+    <h3>@customer.Name</h3>
+    <ul>
+        <li>Membership Type: @customer.MembershipType.Name</li>
+        @if(customer.Birthdate != null)
+        {
+            <li>Birthday: @customer.Birthdate</li>
+        }
+    </ul>
+</div>
+

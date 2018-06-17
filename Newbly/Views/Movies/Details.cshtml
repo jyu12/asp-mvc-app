@@ -1,0 +1,20 @@
+﻿@model Newbly.Models.Movie
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{ 
+    var movie = Model;
+}
+
+<div>
+    <h3>Details</h3>
+    <ul>
+        <li>Genre: @movie.Genre.Type</li>
+        <li>Release Date: @movie.ReleaseDate.ToString("D")</li>
+        <li>Date Add: @movie.DateAdded.ToString("D")</li>
+        <li>Stocks: @movie.Stock</li>
+    </ul>
+</div>
